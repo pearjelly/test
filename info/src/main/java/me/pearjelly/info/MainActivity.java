@@ -9,8 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import java.io.IOException;
-
 import me.pearjelly.wxrobot.net.pojo.DeviceInfo;
 import me.pearjelly.wxrobot.net.pojo.Result;
 import me.pearjelly.wxrobot.net.service.NetworkManager;
@@ -44,29 +42,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
         MainActivity context = this;
         SharedPreferences prefs = getPrefs(context);
         if (TextUtils.isEmpty(prefs.getString("imei", null))) {
-            Call<Result> deviceInfoCall = NetworkManager.getInstance().getInfoService().createInfo(DeviceInfo.getDeviceInfo(this));
-            try {
-                Response<Result> execute = deviceInfoCall.execute();
-                Log.i(LOG_TAG,"response "+execute.body());
-            } catch (IOException e) {
-                Log.e(LOG_TAG,"execute error",e);
-            }
-//            deviceInfoCall.enqueue(new Callback<Result>() {
-//                @Override
-//                public void onResponse(Call<Result> call, Response<Result> response) {
-//                    Log.i(LOG_TAG, "createInfo response " + response.body());
-//                }
-//
-//                @Override
-//                public void onFailure(Call<Result> call, Throwable t) {
-//                    Log.e(LOG_TAG, "createInfo response error", t);
-//                }
-//            });
+            DeviceInfo deviceInfo = DeviceInfo.getDeviceInfo(this);
+//            Call<Result> deviceInfoCall = NetworkManager.getInstance().getInfoService()
+//                    .createInfo(deviceInfo.serial, deviceInfo.imei, deviceInfo.wifimac
+//                            , deviceInfo.bluemac, deviceInfo.androidid, deviceInfo.brand
+//                            , deviceInfo.manufacturer, deviceInfo.model
+//                            , deviceInfo.netcountryiso, deviceInfo.simcountryiso
+//                            , deviceInfo.phonenumber, deviceInfo.imsi, deviceInfo.simserial
+//                            , deviceInfo.wxpasswd);
+            Call<Result> deviceInfoCall = NetworkManager.getInstance().getInfoService().createInfo(deviceInfo);
+            deviceInfoCall.enqueue(new Callback<Result>() {
+                @Override
+                public void onResponse(Call<Result> call, Response<Result> response) {
+                    Log.i(LOG_TAG, "createInfo response " + response.body());
+                }
+
+                @Override
+                public void onFailure(Call<Result> call, Throwable t) {
+                    Log.e(LOG_TAG, "createInfo response error", t);
+                }
+            });
         }
     }
 

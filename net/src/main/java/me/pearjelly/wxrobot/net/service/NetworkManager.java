@@ -17,6 +17,7 @@ public class NetworkManager {
     private NetworkManager() {
         retrofit = new Retrofit.Builder()
         .baseUrl("http://snowberg.wmzzd.com/")
+
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
