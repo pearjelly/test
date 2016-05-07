@@ -26,4 +26,9 @@ public class NetworkManager {
         InfoService service = retrofit.create(InfoService.class);
         return service;
     }
+
+    public AccountService getAccountService() {
+        AccountService service = retrofit.create(AccountService.class);
+        return service;
+    }
 }

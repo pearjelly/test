@@ -5,19 +5,17 @@ import java.lang.reflect.Array;
 /**
  * Created by hxb on 2016/5/1.
  */
-public class Result {
-    String status;
-    DeviceInfo[] data;
+public class UploadResult {
+    public String status;
 
-    public Result() {
+    public UploadResult() {
 
     }
 
     @Override
     public String toString() {
-        return "Result{" +
+        return "UploadResult{" +
                 "status='" + status + '\'' +
-                ", data=" + data +
                 '}';
     }
 }

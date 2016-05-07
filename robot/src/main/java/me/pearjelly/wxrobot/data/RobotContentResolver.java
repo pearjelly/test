@@ -20,7 +20,11 @@ public class RobotContentResolver {
 
     public Uri insertAccount(AccountInfo accountInfo) {
         ContentValues values = new ContentValues();
-        values.put("mobile", accountInfo.getNumber());
+        String number = accountInfo.getNumber();
+        if (number.startsWith("+86")) {
+            number = number.substring(3);
+        }
+        values.put("mobile", number);
         values.put("password", accountInfo.getWxpasswd());
         values.put("deviceid", accountInfo.getSerial());
         values.put("imei", accountInfo.getImei());
@@ -30,7 +34,11 @@ public class RobotContentResolver {
 
     public int updateAccount(int id, AccountInfo accountInfo) {
         ContentValues values = new ContentValues();
-        values.put("mobile", accountInfo.getNumber());
+        String number = accountInfo.getNumber();
+        if (number.startsWith("+86")) {
+            number = number.substring(3);
+        }
+        values.put("mobile", number);
         values.put("password", accountInfo.getWxpasswd());
         values.put("deviceid", accountInfo.getSerial());
         values.put("imei", accountInfo.getImei());

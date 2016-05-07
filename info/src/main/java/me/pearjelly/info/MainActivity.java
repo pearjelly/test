@@ -8,9 +8,11 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import me.pearjelly.wxrobot.net.pojo.DeviceInfo;
-import me.pearjelly.wxrobot.net.pojo.Result;
+import me.pearjelly.wxrobot.net.pojo.GenPasswdResult;
+import me.pearjelly.wxrobot.net.pojo.UploadResult;
 import me.pearjelly.wxrobot.net.service.NetworkManager;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,34 +41,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setEditText(R.id.manufacturer, deviceInfo.getManufacturer());
         setEditText(R.id.model, deviceInfo.getModel());
         findViewById(R.id.save).setOnClickListener(this);
+        findViewById(R.id.upload).setOnClickListener(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        MainActivity context = this;
+        final MainActivity context = this;
+        uploadDeviceInfo(context);
+    }
+
+    private void uploadDeviceInfo(final Context context) {
         SharedPreferences prefs = getPrefs(context);
         if (TextUtils.isEmpty(prefs.getString("imei", null))) {
-            DeviceInfo deviceInfo = DeviceInfo.getDeviceInfo(this);
-//            Call<Result> deviceInfoCall = NetworkManager.getInstance().getInfoService()
-//                    .createInfo(deviceInfo.serial, deviceInfo.imei, deviceInfo.wifimac
-//                            , deviceInfo.bluemac, deviceInfo.androidid, deviceInfo.brand
-//                            , deviceInfo.manufacturer, deviceInfo.model
-//                            , deviceInfo.netcountryiso, deviceInfo.simcountryiso
-//                            , deviceInfo.phonenumber, deviceInfo.imsi, deviceInfo.simserial
-//                            , deviceInfo.wxpasswd);
-            Call<Result> deviceInfoCall = NetworkManager.getInstance().getInfoService().createInfo(deviceInfo);
-            deviceInfoCall.enqueue(new Callback<Result>() {
+            final DeviceInfo deviceInfo = DeviceInfo.getDeviceInfo(this);
+            final NetworkManager networkManager = NetworkManager.getInstance();
+            Call<GenPasswdResult> genPasswdResultCall = networkManager.getAccountService().genPasswd(deviceInfo.phonenumber);
+            genPasswdResultCall.enqueue(new Callback<GenPasswdResult>() {
                 @Override
-                public void onResponse(Call<Result> call, Response<Result> response) {
-                    Log.i(LOG_TAG, "createInfo response " + response.body());
+                public void onResponse(Call<GenPasswdResult> call, Response<GenPasswdResult> response) {
+                    GenPasswdResult body = response.body();
+                    if (body != null && body.status.equals("100000") && !TextUtils.isEmpty(body.data.passwd)) {
+                        deviceInfo.setWxpasswd(body.data.passwd);
+                        Toast.makeText(context, "获取密码：\n" + String.valueOf(deviceInfo.phonenumber) + "\n" + String.valueOf(deviceInfo.wxpasswd), Toast.LENGTH_LONG).show();
+                        Call<UploadResult> deviceInfoCall = networkManager.getInfoService()
+                                .createInfo(deviceInfo.serial, deviceInfo.imei, deviceInfo.wifimac
+                                        , deviceInfo.bluemac, deviceInfo.androidid, deviceInfo.brand
+                                        , deviceInfo.manufacturer, deviceInfo.model
+                                        , deviceInfo.netcountryiso, deviceInfo.simcountryiso
+                                        , deviceInfo.phonenumber, deviceInfo.imsi, deviceInfo.simserial
+                                        , deviceInfo.wxpasswd);
+                        deviceInfoCall.enqueue(new Callback<UploadResult>() {
+                            @Override
+                            public void onResponse(Call<UploadResult> call, Response<UploadResult> response) {
+                                Log.i(LOG_TAG, "createInfo response " + response.body());
+                                Toast.makeText(context, "上传成功：" + String.valueOf(response.body()), Toast.LENGTH_LONG).show();
+                            }
+
+                            @Override
+                            public void onFailure(Call<UploadResult> call, Throwable t) {
+                                Log.e(LOG_TAG, "createInfo response error", t);
+                                Toast.makeText(context, "上传失败：" + String.valueOf(t), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
                 }
 
                 @Override
-                public void onFailure(Call<Result> call, Throwable t) {
-                    Log.e(LOG_TAG, "createInfo response error", t);
+                public void onFailure(Call<GenPasswdResult> call, Throwable t) {
+                    Toast.makeText(context, "获取密码：失败\n" + String.valueOf(deviceInfo.phonenumber) + "\n" + String.valueOf(t), Toast.LENGTH_LONG).show();
                 }
             });
+        } else {
+            Toast.makeText(context, "上传失败：非原始数据", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -82,6 +109,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.save:
+                saveDeviceInfo();
+                break;
+            case R.id.upload:
+                uploadDeviceInfo(this);
+                break;
+            default:
+        }
+    }
+
+    private void saveDeviceInfo() {
         Context context = getApplicationContext();
         SharedPreferences preferences = getPrefs(context);
         SharedPreferences.Editor edit = preferences.edit();

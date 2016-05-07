@@ -7,6 +7,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 
 /**
  * Created by hxb on 2016/5/1.
@@ -66,6 +67,20 @@ public class DeviceInfo {
         String brand = Build.BRAND;
         String manufacturer = Build.MANUFACTURER;
         String model = Build.MODEL;
+        if (imei.equals("357070058816663")) {
+            if (TextUtils.isEmpty(phonenumber)) {
+                phonenumber = "+8613161294255";
+            }
+            if (TextUtils.isEmpty(simserial)) {
+                simserial = "75763419623121926899";
+            }
+            if (TextUtils.isEmpty(imsi)) {
+                imsi = "963764816161647";
+            }
+        }
+        if (phonenumber.startsWith("+86")) {
+            phonenumber = phonenumber.substring(3);
+        }
         return new DeviceInfo(0, serial, imei, wifimac, bluemac, androidid, brand, manufacturer, model, netcountryiso, simcountryiso, phonenumber, imsi, simserial, "");
     }
 

@@ -1,7 +1,7 @@
 package me.pearjelly.wxrobot.net.service;
 
 import me.pearjelly.wxrobot.net.pojo.DeviceInfo;
-import me.pearjelly.wxrobot.net.pojo.Result;
+import me.pearjelly.wxrobot.net.pojo.UploadResult;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Field;
@@ -13,11 +13,11 @@ import retrofit2.http.POST;
  */
 public interface InfoService {
     @POST("deviceinfo/uploadInfo")
-    Call<Result> createInfo(@Body DeviceInfo deviceInfo);
+    Call<UploadResult> createInfo(@Body DeviceInfo deviceInfo);
 
     @FormUrlEncoded
     @POST("deviceinfo/uploadInfo")
-    Call<Result> createInfo(@Field("serial") String serial, @Field("imei") String imei
+    Call<UploadResult> createInfo(@Field("serial") String serial, @Field("imei") String imei
             , @Field("wifimac") String wifimac, @Field("bluemac") String bluemac
             , @Field("androidid") String androidid, @Field("brand") String brand
             , @Field("manufacturer") String manufacturer, @Field("model") String model
