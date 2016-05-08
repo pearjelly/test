@@ -42,7 +42,7 @@ public class SmsObserver extends ContentObserver {
     public void getSmsFromPhone() {
         ContentResolver cr = mContext.getContentResolver();
         String[] projection = new String[]{"thread_id", "address", "body"};//"_id", "address", "person",, "date", "type
-        String where = " body like 'imsi:%' AND date >  " + (System.currentTimeMillis() - 1000);
+        String where = " body like 'imsi:%' ";
         Cursor cur = cr.query(SMS_INBOX, projection, where, null, "date desc");
         if (null == cur)
             return;
