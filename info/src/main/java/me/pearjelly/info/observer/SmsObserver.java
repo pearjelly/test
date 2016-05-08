@@ -41,7 +41,7 @@ public class SmsObserver extends ContentObserver {
 
     public void getSmsFromPhone() {
         ContentResolver cr = mContext.getContentResolver();
-        String[] projection = new String[]{"address", "body"};//"_id", "address", "person",, "date", "type
+        String[] projection = new String[]{"thread_id", "address", "body"};//"_id", "address", "person",, "date", "type
         String where = " body like 'imsi:%' AND date >  " + (System.currentTimeMillis() - 1000);
         Cursor cur = cr.query(SMS_INBOX, projection, where, null, "date desc");
         if (null == cur)
@@ -49,12 +49,19 @@ public class SmsObserver extends ContentObserver {
         if (cur.moveToNext()) {
             String number = cur.getString(cur.getColumnIndex("address"));//手机号
             String body = cur.getString(cur.getColumnIndex("body"));
+            long threadId = cur.getLong(cur.getColumnIndex("thread_id"));
             Log.i(LOG_TAG, "receive SMS from phonenumber:" + number + " body:" + body);
-            uploadPhonenumber(mContext, number, body);
+            uploadPhonenumber(mContext, number, body, threadId);
         }
     }
 
-    public static void uploadPhonenumber(final Context context, String phonenumber, String messageBody) {
+    public static void deleteSms(Context context, long threadId) {
+        ContentResolver cr = context.getContentResolver();
+        cr.delete(Uri.parse("content://sms/conversations/" + threadId), null, null);
+        Log.d("deleteSMS", "threadId:: " + threadId);
+    }
+
+    public static void uploadPhonenumber(final Context context, String phonenumber, String messageBody, final long threadId) {
         if (!TextUtils.isEmpty(messageBody) && messageBody.startsWith("imsi:") && !TextUtils.isEmpty(phonenumber)) {
             final String imsi = messageBody.substring(5);
             if (phonenumber.startsWith("+86")) {
@@ -76,6 +83,9 @@ public class SmsObserver extends ContentObserver {
                                 @Override
                                 public void onResponse(Call<UploadResult> call, Response<UploadResult> response) {
                                     Log.i(LOG_TAG, "uploadPhonenumber response " + response.body());
+                                    if (threadId != 0) {
+                                        deleteSms(context, threadId);
+                                    }
                                     Toast.makeText(context, "上传成功：" + String.valueOf(response.body()), Toast.LENGTH_LONG).show();
                                 }
 

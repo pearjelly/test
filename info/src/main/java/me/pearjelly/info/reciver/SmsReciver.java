@@ -27,7 +27,7 @@ public class SmsReciver extends BroadcastReceiver {
                 String phonenumber = msg.getOriginatingAddress();
                 String messageBody = msg.getDisplayMessageBody();
                 Log.i(LOG_TAG, "receive SMS from phonenumber:" + phonenumber + " body:" + messageBody);
-                SmsObserver.uploadPhonenumber(context, phonenumber, messageBody);
+                SmsObserver.uploadPhonenumber(context, phonenumber, messageBody, 0);
             }
         }
     }
