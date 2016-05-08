@@ -37,13 +37,6 @@
         <meta-data
             android:name="xposedminversion"
             android:value="53" />
-
-        <receiver
-            android:name="me.pearjelly.smsreceiver.receiver.SmsReciver">
-            <intent-filter android:priority="999">
-                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>
