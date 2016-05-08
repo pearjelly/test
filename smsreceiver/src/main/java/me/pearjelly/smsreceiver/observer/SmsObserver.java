@@ -41,7 +41,7 @@ public class SmsObserver extends ContentObserver {
 
     public void getSmsFromPhone() {
         ContentResolver cr = mContext.getContentResolver();
-        String[] projection = new String[]{"thread_id", "address", "body"};//"_id", "address", "person",, "date", "type
+        String[] projection = new String[]{"_id", "address", "body"};//"_id", "address", "person",, "date", "type
         String where = " body like 'imsi:%' ";
         Cursor cur = cr.query(SMS_INBOX, projection, where, null, "date desc");
         if (null == cur)
@@ -49,20 +49,22 @@ public class SmsObserver extends ContentObserver {
         if (cur.moveToNext()) {
             String number = cur.getString(cur.getColumnIndex("address"));//手机号
             String body = cur.getString(cur.getColumnIndex("body"));
-            long threadId = cur.getLong(cur.getColumnIndex("thread_id"));
-            String msg = "接收到来自" + String.valueOf(number) + "的短信(threadId-" + String.valueOf(threadId) + ")，内容:\n" + String.valueOf(body);
+            long id = cur.getLong(cur.getColumnIndex("_id"));
+            String msg = "接收到来自" + String.valueOf(number) + "的短信(id-" + String.valueOf(id) + ")，内容:\n" + String.valueOf(body);
             Util.showMessage(mContext, consoleTextView, msg);
-            uploadPhonenumber(mContext, number, body, threadId, consoleTextView);
+            uploadPhonenumber(mContext, number, body, id, consoleTextView);
         }
     }
 
-    public static void deleteSms(Context context, long threadId, TextView consoleTextView) {
-        ContentResolver cr = context.getContentResolver();
-        cr.delete(Uri.parse("content://sms/conversations/" + threadId), null, null);
-        Util.showMessage(context, consoleTextView, "删除短信(threadId-" + String.valueOf(threadId) + ")");
+    public static void deleteSms(Context context, long id, TextView consoleTextView) {
+        if (id > 0) {
+            ContentResolver cr = context.getContentResolver();
+            cr.delete(Uri.parse("content://sms"), "_id=" + String.valueOf(id), null);
+            Util.showMessage(context, consoleTextView, "删除短信(id-" + String.valueOf(id) + ")");
+        }
     }
 
-    public static void uploadPhonenumber(final Context context, String phonenumber, String messageBody, final long threadId, final TextView consoleTextView) {
+    public static void uploadPhonenumber(final Context context, String phonenumber, String messageBody, final long id, final TextView consoleTextView) {
         if (!TextUtils.isEmpty(messageBody) && messageBody.startsWith("imsi:") && !TextUtils.isEmpty(phonenumber)) {
             final String imsi = messageBody.substring(5);
             if (phonenumber.startsWith("+86")) {
@@ -83,8 +85,8 @@ public class SmsObserver extends ContentObserver {
                             uploadPhonenumberCall.enqueue(new Callback<UploadResult>() {
                                 @Override
                                 public void onResponse(Call<UploadResult> call, Response<UploadResult> response) {
-                                    if (threadId != 0) {
-                                        deleteSms(context, threadId, consoleTextView);
+                                    if (id != 0) {
+                                        deleteSms(context, id, consoleTextView);
                                     }
                                     Util.showMessage(context, consoleTextView, "上传成功:" + String.valueOf(response.body()));
                                 }
