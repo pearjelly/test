@@ -3,7 +3,6 @@ package me.pearjelly.info;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
@@ -12,7 +11,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import me.pearjelly.info.observer.SmsObserver;
 import me.pearjelly.wxrobot.net.pojo.DeviceInfo;
 import me.pearjelly.wxrobot.net.pojo.GenPasswdResult;
 import me.pearjelly.wxrobot.net.pojo.UploadResult;
@@ -24,9 +22,6 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String LOG_TAG = MainActivity.class.getName();
-    private SmsObserver smsObserver;
-    public Handler smsHandler = new Handler() {
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,8 +44,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.save).setOnClickListener(this);
         findViewById(R.id.upload).setOnClickListener(this);
 
-        smsObserver = new SmsObserver(this, smsHandler);
-        getContentResolver().registerContentObserver(SmsObserver.SMS_INBOX, true, smsObserver);
     }
 
     @Override

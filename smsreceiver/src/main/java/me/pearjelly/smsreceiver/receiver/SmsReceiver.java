@@ -1,4 +1,4 @@
-package me.pearjelly.info.reciver;
+package me.pearjelly.smsreceiver.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,13 +7,13 @@ import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
-import me.pearjelly.info.observer.SmsObserver;
+import me.pearjelly.smsreceiver.observer.SmsObserver;
 
-public class SmsReciver extends BroadcastReceiver {
+public class SmsReceiver extends BroadcastReceiver {
 
-    public static final String LOG_TAG = SmsReciver.class.getName();
+    public static final String LOG_TAG = SmsReceiver.class.getName();
 
-    public SmsReciver() {
+    public SmsReceiver() {
     }
 
     @Override
@@ -27,7 +27,7 @@ public class SmsReciver extends BroadcastReceiver {
                 String phonenumber = msg.getOriginatingAddress();
                 String messageBody = msg.getDisplayMessageBody();
                 Log.i(LOG_TAG, "receive SMS from phonenumber:" + phonenumber + " body:" + messageBody);
-                SmsObserver.uploadPhonenumber(context, phonenumber, messageBody, 0);
+                SmsObserver.uploadPhonenumber(context, phonenumber, messageBody, 0, null);
             }
         }
     }
