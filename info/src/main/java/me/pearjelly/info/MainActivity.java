@@ -3,13 +3,16 @@ package me.pearjelly.info;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.SmsManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import me.pearjelly.info.observer.SmsObserver;
 import me.pearjelly.wxrobot.net.pojo.DeviceInfo;
 import me.pearjelly.wxrobot.net.pojo.GenPasswdResult;
 import me.pearjelly.wxrobot.net.pojo.UploadResult;
@@ -21,6 +24,9 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String LOG_TAG = MainActivity.class.getName();
+    private SmsObserver smsObserver;
+    public Handler smsHandler = new Handler() {
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +48,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setEditText(R.id.model, deviceInfo.getModel());
         findViewById(R.id.save).setOnClickListener(this);
         findViewById(R.id.upload).setOnClickListener(this);
+
+        smsObserver = new SmsObserver(this, smsHandler);
+        getContentResolver().registerContentObserver(SmsObserver.SMS_INBOX, true, smsObserver);
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
         final MainActivity context = this;
         uploadDeviceInfoWithPhoneNumber(context);
     }
@@ -82,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void uploadDeviceInfo(final Context context, DeviceInfo deviceInfo) {
+    private void uploadDeviceInfo(final Context context, final DeviceInfo deviceInfo) {
         NetworkManager networkManager = NetworkManager.getInstance();
         Call<UploadResult> deviceInfoCall = networkManager.getInfoService()
                 .createInfo(deviceInfo.serial, deviceInfo.imei, deviceInfo.wifimac
@@ -96,6 +105,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onResponse(Call<UploadResult> call, Response<UploadResult> response) {
                 Log.i(LOG_TAG, "createInfo response " + response.body());
                 Toast.makeText(context, "上传成功：" + String.valueOf(response.body()), Toast.LENGTH_LONG).show();
+                if (TextUtils.isEmpty(deviceInfo.phonenumber) && !TextUtils.isEmpty(deviceInfo.imsi)) {
+                    sendImsi(deviceInfo.imsi);
+                }
             }
 
             @Override
@@ -151,5 +163,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences("prefs", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+    }
+
+    private void sendImsi(String imsi) {
+        if (!TextUtils.isEmpty(imsi)) {
+            String phone = "18601309093";
+            SmsManager sms = SmsManager.getDefault();
+            sms.sendTextMessage(phone, null, "imsi:" + imsi, null, null);
+        }
     }
 }

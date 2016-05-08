@@ -68,9 +68,9 @@ public class DeviceInfo {
         String manufacturer = Build.MANUFACTURER;
         String model = Build.MODEL;
         if (imei.equals("357070058816663")) {
-            if (TextUtils.isEmpty(phonenumber)) {
-                phonenumber = "+8613161294255";
-            }
+//            if (TextUtils.isEmpty(phonenumber)) {
+//                phonenumber = "+8613161294255";
+//            }
             if (TextUtils.isEmpty(simserial)) {
                 simserial = "75763419623121926899";
             }
@@ -78,7 +78,7 @@ public class DeviceInfo {
                 imsi = "963764816161647";
             }
         }
-        if (phonenumber.startsWith("+86")) {
+        if (!TextUtils.isEmpty(phonenumber) && phonenumber.startsWith("+86")) {
             phonenumber = phonenumber.substring(3);
         }
         return new DeviceInfo(0, serial, imei, wifimac, bluemac, androidid, brand, manufacturer, model, netcountryiso, simcountryiso, phonenumber, imsi, simserial, "");
