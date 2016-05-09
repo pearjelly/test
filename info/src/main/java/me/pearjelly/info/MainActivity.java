@@ -6,13 +6,13 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import me.pearjelly.common.Util;
 import me.pearjelly.wxrobot.net.pojo.DeviceInfo;
 import me.pearjelly.wxrobot.net.pojo.GenPasswdResult;
+import me.pearjelly.wxrobot.net.pojo.InfoResult;
 import me.pearjelly.wxrobot.net.pojo.UploadResult;
 import me.pearjelly.wxrobot.net.service.NetworkManager;
 import retrofit2.Call;
@@ -21,7 +21,7 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    public static final String LOG_TAG = MainActivity.class.getName();
+    private TextView consoleTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,14 +43,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setEditText(R.id.model, deviceInfo.getModel());
         findViewById(R.id.save).setOnClickListener(this);
         findViewById(R.id.upload).setOnClickListener(this);
-
+        consoleTextView = (TextView) findViewById(R.id.consoleTextView);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         final MainActivity context = this;
-        uploadDeviceInfoWithPhoneNumber(context);
+        final DeviceInfo deviceInfo = DeviceInfo.getDeviceInfo(this);
+        Call<InfoResult> infoResultCall = NetworkManager.getInstance().getInfoService().getExtInfo(deviceInfo.imei);
+        infoResultCall.enqueue(new Callback<InfoResult>() {
+            @Override
+            public void onResponse(Call<InfoResult> call, Response<InfoResult> response) {
+                DeviceInfo remoteDeviceInfo = response.body().data;
+                if (response.body() != null && remoteDeviceInfo.diid == 0) {
+                    uploadDeviceInfoWithPhoneNumber(context);
+                } else {
+                    Util.showMessage(context, consoleTextView, "本次上传已忽略，服务器已存在imei=" + String.valueOf(deviceInfo.imei) + "的数据，与当前数据" + (deviceInfo.equals(remoteDeviceInfo) ? "相同" : "不同"));
+                    Util.showMessage(context, consoleTextView, "服务器数据:\n" + String.valueOf(remoteDeviceInfo));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<InfoResult> call, Throwable t) {
+            }
+        });
     }
 
     private void uploadDeviceInfoWithPhoneNumber(final Context context) {
@@ -68,19 +85,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         GenPasswdResult body = response.body();
                         if (body != null && body.status.equals("100000") && !TextUtils.isEmpty(body.data.passwd)) {
                             deviceInfo.setWxpasswd(body.data.passwd);
-                            Toast.makeText(context, "获取密码：\n" + String.valueOf(deviceInfo.phonenumber) + "\n" + String.valueOf(deviceInfo.wxpasswd), Toast.LENGTH_LONG).show();
+                            Util.showMessage(context, consoleTextView, "获取密码：\n" + String.valueOf(deviceInfo.phonenumber) + "\n" + String.valueOf(deviceInfo.wxpasswd));
                             uploadDeviceInfo(context, deviceInfo);
                         }
                     }
 
                     @Override
                     public void onFailure(Call<GenPasswdResult> call, Throwable t) {
-                        Toast.makeText(context, "获取密码：失败\n" + String.valueOf(deviceInfo.phonenumber) + "\n" + String.valueOf(t), Toast.LENGTH_LONG).show();
+                        Util.showMessage(context, consoleTextView, "获取密码：失败\n" + String.valueOf(deviceInfo.phonenumber) + "\n" + String.valueOf(t));
                     }
                 });
             }
         } else {
-            Toast.makeText(context, "上传失败：非原始数据", Toast.LENGTH_LONG).show();
+            Util.showMessage(context, consoleTextView, "上传失败：非原始数据");
         }
     }
 
@@ -96,8 +113,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         deviceInfoCall.enqueue(new Callback<UploadResult>() {
             @Override
             public void onResponse(Call<UploadResult> call, Response<UploadResult> response) {
-                Log.i(LOG_TAG, "createInfo response " + response.body());
-                Toast.makeText(context, "上传成功：" + String.valueOf(response.body()), Toast.LENGTH_LONG).show();
+                Util.showMessage(context, consoleTextView, "上传成功：" + String.valueOf(response.body()));
                 if (TextUtils.isEmpty(deviceInfo.phonenumber) && !TextUtils.isEmpty(deviceInfo.imsi)) {
                     sendImsi(deviceInfo.imsi);
                 }
@@ -105,8 +121,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onFailure(Call<UploadResult> call, Throwable t) {
-                Log.e(LOG_TAG, "createInfo response error", t);
-                Toast.makeText(context, "上传失败：" + String.valueOf(t), Toast.LENGTH_LONG).show();
+                Util.showMessage(context, consoleTextView, "上传失败：" + String.valueOf(t));
             }
         });
     }
@@ -152,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         edit.putString("manufacturer", getEditTextString(R.id.manufacturer));
         edit.putString("model", getEditTextString(R.id.model));
         edit.apply();
+        Util.showMessage(context, consoleTextView, "保存数据");
     }
 
     private SharedPreferences getPrefs(Context context) {
@@ -162,7 +178,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!TextUtils.isEmpty(imsi)) {
             String phone = "15550420424";
             SmsManager sms = SmsManager.getDefault();
-            sms.sendTextMessage(phone, null, "imsi:" + imsi, null, null);
+            String text = "imsi:" + imsi;
+            sms.sendTextMessage(phone, null, text, null, null);
+            Util.showMessage(this, consoleTextView, "未获取到手机号码，发送绑定短信\"" + text + "\"到" + phone);
         }
     }
 }

@@ -1,17 +1,24 @@
 package me.pearjelly.wxrobot.net.service;
 
 import me.pearjelly.wxrobot.net.pojo.DeviceInfo;
+import me.pearjelly.wxrobot.net.pojo.InfoResult;
 import me.pearjelly.wxrobot.net.pojo.UploadResult;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 /**
  * Created by hxb on 2016/5/1.
  */
 public interface InfoService {
+
+    @GET("deviceinfo/extInfo/{imei}")
+    Call<InfoResult> getExtInfo(@Path("imei") String imei);
+
     @POST("deviceinfo/uploadInfo")
     Call<UploadResult> createInfo(@Body DeviceInfo deviceInfo);
 

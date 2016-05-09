@@ -12,6 +12,31 @@
 
     <ScrollView
         android:layout_width="match_parent"
+        android:layout_height="240dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="调试信息:" />
+
+            <TextView
+                android:id="@+id/consoleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/black"
+                android:minLines="14"
+                android:textColor="@android:color/holo_green_dark"
+                android:textSize="12dp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <ScrollView
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
@@ -229,28 +254,29 @@
                     android:layout_height="wrap_content" />
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/save"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="保存" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="10dp"
-                    android:layout_weight="1" />
-
-                <Button
-                    android:id="@+id/upload"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="上传" />
-            </LinearLayout>
         </LinearLayout>
     </ScrollView>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="保存" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="10dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/upload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="上传" />
+    </LinearLayout>
 </LinearLayout>

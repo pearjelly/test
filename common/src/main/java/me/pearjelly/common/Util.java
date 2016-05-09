@@ -18,7 +18,7 @@ public class Util {
             consoleTextView.append(">>" + String.valueOf(text) + "\n");
         } else {
             if (context != null) {
-                Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, text, Toast.LENGTH_LONG).show();
             }
         }
         Log.i(LOG_TAG, text);
