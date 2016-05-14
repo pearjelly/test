@@ -2,6 +2,7 @@ package me.pearjelly.info;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setEditText(R.id.bluemac, deviceInfo.getBluemac());
         setEditText(R.id.androidid, deviceInfo.getAndroidid());
         setEditText(R.id.serial, deviceInfo.getSerial());
-        setEditText(R.id.brand, deviceInfo.getSerial());
+        setEditText(R.id.brand, deviceInfo.getBrand());
         setEditText(R.id.manufacturer, deviceInfo.getManufacturer());
         setEditText(R.id.model, deviceInfo.getModel());
         findViewById(R.id.save).setOnClickListener(this);
@@ -155,7 +156,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SharedPreferences.Editor edit = preferences.edit();
         edit.putString("imei", getEditTextString(R.id.imei));
         edit.putString("imsi", getEditTextString(R.id.imsi));
-        edit.putString("number", getEditTextString(R.id.number));
+        String mobile = getEditTextString(R.id.number);
+        edit.putString("number", mobile == null || mobile.length() == 0 ? "" : mobile.startsWith("+86") ? mobile : "+86" + mobile);
         edit.putString("netcountryiso", getEditTextString(R.id.netcountryiso));
         edit.putString("simcountryiso", getEditTextString(R.id.simcountryiso));
         edit.putString("simserial", getEditTextString(R.id.simserial));

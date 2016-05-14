@@ -16,6 +16,9 @@ import retrofit2.http.Path;
  */
 public interface InfoService {
 
+    @GET("deviceinfo/renewInfo/{imei}")
+    Call<InfoResult> getNewInfo(@Path("imei") String imei);
+
     @GET("deviceinfo/extInfo/{imei}")
     Call<InfoResult> getExtInfo(@Path("imei") String imei);
 

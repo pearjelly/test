@@ -18,12 +18,12 @@ android {
         }
     }
 
-    applicationVariants.all { variant ->
-        variant.outputs.each { output ->
-            def file = output.outputFile
-            output.outputFile = new File(file.parent, "smsreceiver_${versionName}_${variant.dirName}.apk")
-        }
-    }
+//    applicationVariants.all { variant ->
+//        variant.outputs.each { output ->
+//            def file = output.outputFile
+//            output.outputFile = new File(file.parent, "smsreceiver_${versionName}_${variant.dirName}.apk")
+//        }
+//    }
 }
 
 dependencies {

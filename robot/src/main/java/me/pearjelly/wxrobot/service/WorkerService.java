@@ -3,6 +3,7 @@ package me.pearjelly.wxrobot.service;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,6 +13,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
@@ -28,7 +30,11 @@ import me.pearjelly.wxrobot.MainActivity;
 import me.pearjelly.wxrobot.R;
 import me.pearjelly.wxrobot.common.Util;
 import me.pearjelly.wxrobot.data.RobotContentResolver;
-import me.pearjelly.wxrobot.data.pojo.AccountInfo;
+import me.pearjelly.wxrobot.net.pojo.DeviceInfo;
+import me.pearjelly.wxrobot.net.pojo.InfoResult;
+import me.pearjelly.wxrobot.net.service.NetworkManager;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Created by xiaobinghan on 16/4/16.
@@ -41,9 +47,11 @@ public class WorkerService extends Service implements Runnable {
     public static final String WX_PACKAGE = "com.tencent.mm";
     public static final String WX_TEST_APK = "mm-test-debug.apk";
     public static final String WX_TEST_PACKAGE = "com.tencent.mm.test";
+    private String currentImei;
 
     public WorkerService() {
         super();
+        currentImei = "0";
         Log.d(LOG_TAG, "init");
     }
 
@@ -145,55 +153,72 @@ public class WorkerService extends Service implements Runnable {
     @Override
     public void run() {
         Log.d(LOG_TAG, "wifi mac:" + String.valueOf(getLocalMacAddress()));
-        Context context = getApplicationContext();
+        final Context context = getApplicationContext();
         boolean initApks = initApks(context, true);
-        RobotContentResolver contentResolver = new RobotContentResolver(context);
         if (initApks) {
-            int count = 0;
-            AccountInfo[] accountInfos = new AccountInfo[]{
-                    new AccountInfo(4, "d665d019", "867345020000403", "74:04:2b:d1:0f:c7", "00:00:00:FD:E2:26", "f8e95b3d3f495da8", "qcom", "qcom", "wt86528_C2", "15550419396", "460014115421626", "89860114451701435801", "920e61de"),
-                    new AccountInfo(4, "d665d019", "867345020000403", "74:04:2b:d1:0f:c7", "00:00:00:FD:E2:26", "f8e95b3d3f495da8", "qcom", "qcom", "wt86528_C2", "15550419396", "460014115421626", "89860114451701435801", "920e61de"),
-                    new AccountInfo(1, "4d00cd64b490a0e1", "357070058816663", "34:23:BA:B7:9A:72", "CC:07:AB:2A:78:E9", "eab6e1139cc479d4", "samsung", "samsung", "GT-I9300", "13161294255", "963764816161647", "75763419623121926899", "tiantian")
-            };
             while (true) {
-                try {
-                    count++;
-                    AccountInfo accountInfo = accountInfos[count % 2];
-                    String mobile = accountInfo.getNumber();
-                    contentResolver.insertAccount(accountInfo);
-                    Context infoContext = null;
-                    try {
-                        infoContext = createPackageContext("me.pearjelly.info", Context.CONTEXT_IGNORE_SECURITY);
-                        SharedPreferences preferences = infoContext.getSharedPreferences("prefs", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
-                        Log.d(LOG_TAG, "get me.pearjelly.info preferences:" + String.valueOf(preferences));
-                        SharedPreferences.Editor edit = preferences.edit();
-                        edit.putString("imei", accountInfo.getImei());
-                        edit.putString("wifimac", accountInfo.getMacaddr());
-                        edit.putString("bluemac", accountInfo.getBluemac());
-                        edit.putString("androidid", accountInfo.getAndroidid());
-                        edit.putString("serial", accountInfo.getSerial());
-                        edit.putString("brand", accountInfo.getBrand());
-                        edit.putString("manufacturer", accountInfo.getManufacturer());
-                        edit.putString("model", accountInfo.getModel());
-                        edit.putString("number", mobile.startsWith("+") ? mobile : "+86" + mobile);
-                        edit.putString("imsi", accountInfo.getImsi());
-                        edit.putString("simserial", accountInfo.getSimserial());
-                        edit.apply();
-                        Log.d(LOG_TAG, "write account info:" + String.valueOf(accountInfo));
-                    } catch (PackageManager.NameNotFoundException e) {
-                        Log.d(LOG_TAG, "createPackageContext error " + String.valueOf(e.getMessage()));
-                    }
+                nextTask(context);
+            }
+        }
+    }
 
-                    resetwx();
-                    ShellUtils.CommandResult result = ShellUtils.execCommand("am instrument -w -r -e debug false -e class com.tencent.mm.test.LoginWithMobile com.tencent.mm.test/android.test.InstrumentationTestRunner", true);
-                    Log.d(LOG_TAG, "exec command mobile:" + mobile + " count:" + count + "\nresult:" + result.successMsg + "\nerror:" + result.errorMsg);
+    private void nextTask(final Context context) {
+        Call<InfoResult> infoResultCall = NetworkManager.getInstance().getInfoService().getNewInfo(currentImei);
+        try {
+            Response<InfoResult> response = infoResultCall.execute();
+            DeviceInfo deviceInfo = response.body().data;
+            currentImei = deviceInfo.imei;
+            if (!TextUtils.isEmpty(currentImei) && !TextUtils.isEmpty(deviceInfo.phonenumber) && !TextUtils.isEmpty(deviceInfo.wxpasswd)) {
+                try {
+                    loginUseAccount(context, deviceInfo);
                     Log.d(LOG_TAG, "我还在运行..");
-                    Thread.currentThread().sleep((long) (Math.random() * 3 * 60 * 1000));
+                    Intent intent = new Intent(Intent.ACTION_MAIN);
+                    intent.setComponent(new ComponentName("com.tencent.mm", "com.tencent.mm.ui.LauncherUI"));
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    Thread.currentThread().sleep((long) (Math.random() * 1 * 60 * 1000));
                 } catch (InterruptedException e) {
                     Log.e(LOG_TAG, e.getMessage());
                 }
+            } else {
+                Log.e(LOG_TAG, "ignore data invalid:" + String.valueOf(deviceInfo));
             }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, e.getMessage());
         }
+    }
+
+    private void loginUseAccount(Context context, DeviceInfo deviceInfo) {
+        String mobile = deviceInfo.getPhonenumber();
+        RobotContentResolver contentResolver = new RobotContentResolver(context);
+        contentResolver.insertAccount(deviceInfo);
+        Context infoContext = null;
+        try {
+            infoContext = createPackageContext("me.pearjelly.info", Context.CONTEXT_IGNORE_SECURITY);
+            SharedPreferences preferences = infoContext.getSharedPreferences("prefs", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+            Log.d(LOG_TAG, "get me.pearjelly.info preferences:" + String.valueOf(preferences));
+            SharedPreferences.Editor edit = preferences.edit();
+            edit.putString("imei", deviceInfo.getImei());
+            edit.putString("wifimac", deviceInfo.getWifimac());
+            edit.putString("bluemac", deviceInfo.getBluemac());
+            edit.putString("androidid", deviceInfo.getAndroidid());
+            edit.putString("serial", deviceInfo.getSerial());
+            edit.putString("brand", deviceInfo.getBrand());
+            edit.putString("manufacturer", deviceInfo.getManufacturer());
+            edit.putString("model", deviceInfo.getModel());
+//            edit.putString("number", mobile == null || mobile.length() == 0 ? "" : mobile.startsWith("+86") ? mobile : "+86" + mobile);
+            edit.putString("number", "");//empty phone number
+            edit.putString("imsi", deviceInfo.getImsi());
+            edit.putString("simserial", deviceInfo.getSimserial());
+            edit.apply();
+            Log.d(LOG_TAG, "write account info:" + String.valueOf(deviceInfo));
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.d(LOG_TAG, "createPackageContext error " + String.valueOf(e.getMessage()));
+        }
+
+        resetwx();
+        ShellUtils.CommandResult result = ShellUtils.execCommand("am instrument -w -r -e debug false -e class com.tencent.mm.test.LoginWithMobile com.tencent.mm.test/android.test.InstrumentationTestRunner", true);
+        Log.d(LOG_TAG, "exec command mobile:" + mobile + "\nresult:" + result.successMsg + "\nerror:" + result.errorMsg);
     }
 
     public boolean initApks(Context context, boolean overwrite) {
