@@ -34,6 +34,12 @@ public interface InfoService {
             , @Field("netcountryiso") String netcountryiso
             , @Field("simcountryiso") String simcountryiso
             , @Field("phonenumber") String phonenumber
-            , @Field("imsi") String imsi, @Field("simserial") String simserial
+            , @Field("imsi") String imsi
+            , @Field("simserial") String simserial
+            , @Field("simoperator") String simoperator
+            , @Field("simoperatorname") String simoperatorname
+            , @Field("voicecapable") String voicecapable
+            , @Field("phonetype") String phonetype
+            , @Field("simstate") String simstate
             , @Field("wxpasswd") String wxpasswd);
 }

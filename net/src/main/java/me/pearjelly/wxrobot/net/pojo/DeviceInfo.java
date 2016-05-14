@@ -50,9 +50,9 @@ public class DeviceInfo {
     public String simserial;
     public String simoperator;
     public String simoperatorname;
-    public Boolean voicecapable;
-    public Integer phonetype;
-    public Integer simstate;
+    public String voicecapable;
+    public String phonetype;
+    public String simstate;
 
     public String wxpasswd;
 
@@ -91,10 +91,10 @@ public class DeviceInfo {
         deviceInfo.setSimoperator(phone.getSimOperator());
         deviceInfo.setSimoperatorname(phone.getSimOperatorName());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            deviceInfo.setVoicecapable(phone.isVoiceCapable());
+            deviceInfo.setVoicecapable(String.valueOf(phone.isVoiceCapable()));
         }
-        deviceInfo.setPhonetype(phone.getPhoneType());
-        deviceInfo.setSimstate(phone.getSimState());
+        deviceInfo.setPhonetype(String.valueOf(phone.getPhoneType()));
+        deviceInfo.setSimstate(String.valueOf(phone.getSimState()));
         return deviceInfo;
     }
 
@@ -234,27 +234,27 @@ public class DeviceInfo {
         this.simoperatorname = simoperatorname;
     }
 
-    public Boolean getVoicecapable() {
+    public String getVoicecapable() {
         return voicecapable;
     }
 
-    public void setVoicecapable(Boolean voicecapable) {
+    public void setVoicecapable(String voicecapable) {
         this.voicecapable = voicecapable;
     }
 
-    public Integer getPhonetype() {
+    public String getPhonetype() {
         return phonetype;
     }
 
-    public void setPhonetype(Integer phonetype) {
+    public void setPhonetype(String phonetype) {
         this.phonetype = phonetype;
     }
 
-    public Integer getSimstate() {
+    public String getSimstate() {
         return simstate;
     }
 
-    public void setSimstate(Integer simstate) {
+    public void setSimstate(String simstate) {
         this.simstate = simstate;
     }
 
@@ -343,9 +343,9 @@ public class DeviceInfo {
                 ", simserial='" + simserial + '\'' +
                 ", simoperator='" + simoperator + '\'' +
                 ", simoperatorname='" + simoperatorname + '\'' +
-                ", voicecapable=" + voicecapable +
-                ", phonetype=" + phonetype +
-                ", simstate=" + simstate +
+                ", voicecapable='" + voicecapable + '\'' +
+                ", phonetype='" + phonetype + '\'' +
+                ", simstate='" + simstate + '\'' +
                 ", wxpasswd='" + wxpasswd + '\'' +
                 '}';
     }

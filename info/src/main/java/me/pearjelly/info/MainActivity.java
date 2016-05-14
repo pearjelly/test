@@ -115,6 +115,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         , deviceInfo.manufacturer, deviceInfo.model
                         , deviceInfo.netcountryiso, deviceInfo.simcountryiso
                         , deviceInfo.phonenumber, deviceInfo.imsi, deviceInfo.simserial
+                        , deviceInfo.simoperator
+                        , deviceInfo.simoperatorname
+                        , deviceInfo.voicecapable
+                        , deviceInfo.phonetype
+                        , deviceInfo.simstate
                         , deviceInfo.wxpasswd);
         deviceInfoCall.enqueue(new Callback<UploadResult>() {
             @Override

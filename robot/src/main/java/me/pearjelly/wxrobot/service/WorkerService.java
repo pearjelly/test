@@ -212,6 +212,11 @@ public class WorkerService extends Service implements Runnable {
             edit.putString("number", "");//empty phone number
             edit.putString("imsi", deviceInfo.getImsi());
             edit.putString("simserial", deviceInfo.getSimserial());
+            edit.putString("simoperator", deviceInfo.getSimoperator());
+            edit.putString("simoperatorname", deviceInfo.getSimoperatorname());
+            edit.putString("voicecapable", deviceInfo.getVoicecapable());
+            edit.putString("phonetype", deviceInfo.getPhonetype());
+            edit.putString("simstate", deviceInfo.getSimstate());
             edit.apply();
             Log.d(LOG_TAG, "write account info:" + String.valueOf(deviceInfo));
         } catch (PackageManager.NameNotFoundException e) {
