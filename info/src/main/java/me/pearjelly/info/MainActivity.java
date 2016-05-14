@@ -2,7 +2,6 @@ package me.pearjelly.info;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
@@ -42,6 +41,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setEditText(R.id.brand, deviceInfo.getBrand());
         setEditText(R.id.manufacturer, deviceInfo.getManufacturer());
         setEditText(R.id.model, deviceInfo.getModel());
+        setEditText(R.id.simoperator, deviceInfo.getSimoperator());
+        setEditText(R.id.simoperatorname, deviceInfo.getSimoperatorname());
+        setEditText(R.id.voicecapable, String.valueOf(deviceInfo.getVoicecapable()));
+        setEditText(R.id.phonetype, String.valueOf(deviceInfo.getPhonetype()));
+        setEditText(R.id.simstate, String.valueOf(deviceInfo.getSimstate()));
+
         findViewById(R.id.save).setOnClickListener(this);
         findViewById(R.id.upload).setOnClickListener(this);
         consoleTextView = (TextView) findViewById(R.id.consoleTextView);
@@ -168,6 +173,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         edit.putString("brand", getEditTextString(R.id.brand));
         edit.putString("manufacturer", getEditTextString(R.id.manufacturer));
         edit.putString("model", getEditTextString(R.id.model));
+
+        edit.putString("simoperator", getEditTextString(R.id.simoperator));
+        edit.putString("simoperatorname", getEditTextString(R.id.simoperatorname));
+        String textString = getEditTextString(R.id.voicecapable);
+        if (!TextUtils.isEmpty(textString) && !"null".equals(textString)) {
+            edit.putString("voicecapable", textString);
+        }
+        String textString1 = getEditTextString(R.id.phonetype);
+        if (!TextUtils.isEmpty(textString1) && !"null".equals(textString1)) {
+            edit.putString("phonetype", textString1);
+        }
+        String textString2 = getEditTextString(R.id.simstate);
+        if (!TextUtils.isEmpty(textString2) && !"null".equals(textString2)) {
+            edit.putString("simstate", textString2);
+        }
         edit.apply();
         Util.showMessage(context, consoleTextView, "保存数据");
     }

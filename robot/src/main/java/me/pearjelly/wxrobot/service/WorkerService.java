@@ -204,6 +204,8 @@ public class WorkerService extends Service implements Runnable {
             edit.putString("androidid", deviceInfo.getAndroidid());
             edit.putString("serial", deviceInfo.getSerial());
             edit.putString("brand", deviceInfo.getBrand());
+            edit.putString("netcountryiso", deviceInfo.getNetcountryiso());
+            edit.putString("simcountryiso", deviceInfo.getSimcountryiso());
             edit.putString("manufacturer", deviceInfo.getManufacturer());
             edit.putString("model", deviceInfo.getModel());
 //            edit.putString("number", mobile == null || mobile.length() == 0 ? "" : mobile.startsWith("+86") ? mobile : "+86" + mobile);

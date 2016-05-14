@@ -6,8 +6,11 @@ import android.net.wifi.WifiInfo;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -35,8 +38,16 @@ public class MainHook implements IXposedHookLoadPackage {
             }});
             try {
                 XSharedPreferences pre = new XSharedPreferences("me.pearjelly.info", "prefs");
-                String ks[] = {"imei", "imsi", "number","netcountryiso","simcountryiso", "simserial",
-                        "wifimac", "bluemac", "androidid", "serial", "brand",  "manufacturer", "model"};
+                String ks[] = {"imei", "imsi", "number", "netcountryiso", "simcountryiso", "simserial",
+                        "wifimac", "bluemac", "androidid", "serial", "brand", "manufacturer"
+                        , "model"
+                        , "simoperator"
+                        , "simoperatorname"
+                        , "voicecapable"
+                        , "phonetype"
+                        , "simstate"
+                };
+
                 HashMap<String, String> maps = new HashMap<String, String>();
                 for (String k : ks) {
                     String v = pre.getString(k, null);
@@ -58,30 +69,83 @@ public class MainHook implements IXposedHookLoadPackage {
     }
 
     private void hookAll(final String pg, final Map<String, String> map) {
+        Set<String> hookedMethodSet = new HashSet<>();
         String imei = map.get("imei");
         if (!TextUtils.isEmpty(imei)) {
-            hookMethod(TelephonyManager.class, "getDeviceId", imei, pg);
+            String methodName = "getDeviceId";
+            hookMethod(TelephonyManager.class, methodName, imei, pg);
+            hookedMethodSet.add(methodName);
         }
         String imsi = map.get("imsi");
         if (!TextUtils.isEmpty(imsi)) {
-            hookMethod(TelephonyManager.class, "getSubscriberId", imsi, pg);
+            String methodName = "getSubscriberId";
+            hookMethod(TelephonyManager.class, methodName, imsi, pg);
+            hookedMethodSet.add(methodName);
         }
         String number = map.get("number");
         if (!TextUtils.isEmpty(number)) {
-            hookMethod(TelephonyManager.class, "getLine1Number", number, pg);
+            String methodName = "getLine1Number";
+            hookMethod(TelephonyManager.class, methodName, number, pg);
+            hookedMethodSet.add(methodName);
         }
         String netcountryiso = map.get("netcountryiso");
         if (!TextUtils.isEmpty(netcountryiso)) {
-            hookMethod(TelephonyManager.class, "getNetworkCountryIso", netcountryiso, pg);
+            String methodName = "getNetworkCountryIso";
+            hookMethod(TelephonyManager.class, methodName, netcountryiso, pg);
+            hookedMethodSet.add(methodName);
         }
         String simcountryiso = map.get("simcountryiso");
         if (!TextUtils.isEmpty(simcountryiso)) {
-            hookMethod(TelephonyManager.class, "getSimCountryIso", simcountryiso, pg);
+            String methodName = "getSimCountryIso";
+            hookMethod(TelephonyManager.class, methodName, simcountryiso, pg);
+            hookedMethodSet.add(methodName);
         }
         String simserial = map.get("simserial");
         if (!TextUtils.isEmpty(simserial)) {
-            hookMethod(TelephonyManager.class, "getSimSerialNumber",
+            String methodName = "getSimSerialNumber";
+            hookMethod(TelephonyManager.class, methodName,
                     simserial, pg);
+            hookedMethodSet.add(methodName);
+        }
+        String simoperator = map.get("simoperator");
+        if (!TextUtils.isEmpty(simoperator)) {
+            String methodName = "getSimOperator";
+            hookMethod(TelephonyManager.class, methodName,
+                    simoperator, pg);
+            hookedMethodSet.add(methodName);
+        }
+        String simoperatorname = map.get("simoperatorname");
+        if (!TextUtils.isEmpty(simoperatorname)) {
+            String methodName = "getSimOperatorName";
+            hookMethod(TelephonyManager.class, methodName,
+                    simoperatorname, pg);
+            hookedMethodSet.add(methodName);
+        }
+        String voicecapable = map.get("voicecapable");
+        if (!TextUtils.isEmpty(voicecapable)) {
+            String methodName = "isVoiceCapable";
+            hookMethod(TelephonyManager.class, methodName,
+                    voicecapable, pg);
+            hookedMethodSet.add(methodName);
+        }
+        String phonetype = map.get("phonetype");
+        if (!TextUtils.isEmpty(phonetype)) {
+            String methodName = "getPhoneType";
+            hookMethod(TelephonyManager.class, methodName,
+                    phonetype, pg);
+            hookedMethodSet.add(methodName);
+        }
+        String simstate = map.get("simstate");
+        if (!TextUtils.isEmpty(simstate)) {
+            String methodName = "getSimState";
+            hookMethod(TelephonyManager.class, methodName,
+                    simstate, pg);
+            hookedMethodSet.add(methodName);
+        }
+        for (Method method : TelephonyManager.class.getDeclaredMethods()) {
+            if (!hookedMethodSet.contains(method.getName())) {
+                hookMethod(TelephonyManager.class, method.getName(), number, pg);
+            }
         }
         String wifimac = map.get("wifimac");
         if (!TextUtils.isEmpty(wifimac)) {
@@ -126,7 +190,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                             MethodHookParam param) throws Throwable {
                                         if (param.args[1] == "android_id") {
                                             param.setResult(androidid);
-                                            XposedBridge.log("pg:" + String.valueOf(pg) + " hookedMethod Secure.getString result:" + String.valueOf(androidid));
+                                            XposedBridge.log("pg:" + String.valueOf(pg) + " hookedMethodSet Secure.getString result:" + String.valueOf(androidid));
                                         }
                                     }
                                 }});
@@ -140,16 +204,43 @@ public class MainHook implements IXposedHookLoadPackage {
     private void hookMethod(final Class cl, final String method,
                             final String result, final String pg) {
         try {
+            Object ret;
+            if (method.equals("getSimState") || method.equals("getPhoneType")) {
+                if (!TextUtils.isEmpty(result) && !"null".equals(result)) {
+                    try {
+                        ret = Integer.parseInt(result);
+                    } catch (NumberFormatException e) {
+                        ret = null;
+                    }
+                } else {
+                    ret = null;
+                }
+            } else if (method.equals("isVoiceCapable")) {
+                if (!TextUtils.isEmpty(result) && !"null".equals(result)) {
+                    try {
+                        ret = Boolean.parseBoolean(result);
+                    } catch (Exception e) {
+                        ret = null;
+                    }
+                } else {
+                    ret = null;
+                }
+            } else {
+                ret = result;
+            }
+            final Object finalRet = ret;
             XposedHelpers.findAndHookMethod(cl, method,
                     new Object[]{new XC_MethodHook() {
                         protected void afterHookedMethod(MethodHookParam param)
                                 throws Throwable {
-                            param.setResult(result);
-                            XposedBridge.log("pg:" + String.valueOf(pg) + " hookedMethod " + method + " result:" + String.valueOf(result));
+                            if (finalRet != null) {
+                                param.setResult(finalRet);
+                            }
+                            XposedBridge.log("pg:" + String.valueOf(pg) + " hookedMethod " + method + " result:" + String.valueOf(finalRet));
                         }
 
                     }});
-            XposedBridge.log("pg:" + String.valueOf(pg) + " hookingMethod " + method + " result:" + String.valueOf(result));
+            XposedBridge.log("pg:" + String.valueOf(pg) + " hookingMethod " + method + " result:" + String.valueOf(finalRet));
         } catch (Throwable e) {
             XposedBridge.log("pg:" + String.valueOf(pg) + " hookingMethod " + method + " failure !" + e.getMessage());
         }

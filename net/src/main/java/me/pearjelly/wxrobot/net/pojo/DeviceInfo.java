@@ -48,6 +48,12 @@ public class DeviceInfo {
     public String phonenumber;
     public String imsi;
     public String simserial;
+    public String simoperator;
+    public String simoperatorname;
+    public Boolean voicecapable;
+    public Integer phonetype;
+    public Integer simstate;
+
     public String wxpasswd;
 
     public static DeviceInfo getDeviceInfo(Activity activity) {
@@ -81,7 +87,15 @@ public class DeviceInfo {
         if (!TextUtils.isEmpty(phonenumber) && phonenumber.startsWith("+86")) {
             phonenumber = phonenumber.substring(3);
         }
-        return new DeviceInfo(0, serial, imei, wifimac, bluemac, androidid, brand, manufacturer, model, netcountryiso, simcountryiso, phonenumber, imsi, simserial, "");
+        DeviceInfo deviceInfo = new DeviceInfo(0, serial, imei, wifimac, bluemac, androidid, brand, manufacturer, model, netcountryiso, simcountryiso, phonenumber, imsi, simserial, "");
+        deviceInfo.setSimoperator(phone.getSimOperator());
+        deviceInfo.setSimoperatorname(phone.getSimOperatorName());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            deviceInfo.setVoicecapable(phone.isVoiceCapable());
+        }
+        deviceInfo.setPhonetype(phone.getPhoneType());
+        deviceInfo.setSimstate(phone.getSimState());
+        return deviceInfo;
     }
 
     public int getDiid() {
@@ -204,6 +218,46 @@ public class DeviceInfo {
         this.wxpasswd = wxpasswd;
     }
 
+    public String getSimoperator() {
+        return simoperator;
+    }
+
+    public void setSimoperator(String simoperator) {
+        this.simoperator = simoperator;
+    }
+
+    public String getSimoperatorname() {
+        return simoperatorname;
+    }
+
+    public void setSimoperatorname(String simoperatorname) {
+        this.simoperatorname = simoperatorname;
+    }
+
+    public Boolean getVoicecapable() {
+        return voicecapable;
+    }
+
+    public void setVoicecapable(Boolean voicecapable) {
+        this.voicecapable = voicecapable;
+    }
+
+    public Integer getPhonetype() {
+        return phonetype;
+    }
+
+    public void setPhonetype(Integer phonetype) {
+        this.phonetype = phonetype;
+    }
+
+    public Integer getSimstate() {
+        return simstate;
+    }
+
+    public void setSimstate(Integer simstate) {
+        this.simstate = simstate;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -231,6 +285,16 @@ public class DeviceInfo {
         if (imsi != null ? !imsi.equals(that.imsi) : that.imsi != null) return false;
         if (simserial != null ? !simserial.equals(that.simserial) : that.simserial != null)
             return false;
+        if (simoperator != null ? !simoperator.equals(that.simoperator) : that.simoperator != null)
+            return false;
+        if (simoperatorname != null ? !simoperatorname.equals(that.simoperatorname) : that.simoperatorname != null)
+            return false;
+        if (voicecapable != null ? !voicecapable.equals(that.voicecapable) : that.voicecapable != null)
+            return false;
+        if (phonetype != null ? !phonetype.equals(that.phonetype) : that.phonetype != null)
+            return false;
+        if (simstate != null ? !simstate.equals(that.simstate) : that.simstate != null)
+            return false;
         return wxpasswd != null ? wxpasswd.equals(that.wxpasswd) : that.wxpasswd == null;
 
     }
@@ -251,6 +315,11 @@ public class DeviceInfo {
         result = 31 * result + (phonenumber != null ? phonenumber.hashCode() : 0);
         result = 31 * result + (imsi != null ? imsi.hashCode() : 0);
         result = 31 * result + (simserial != null ? simserial.hashCode() : 0);
+        result = 31 * result + (simoperator != null ? simoperator.hashCode() : 0);
+        result = 31 * result + (simoperatorname != null ? simoperatorname.hashCode() : 0);
+        result = 31 * result + (voicecapable != null ? voicecapable.hashCode() : 0);
+        result = 31 * result + (phonetype != null ? phonetype.hashCode() : 0);
+        result = 31 * result + (simstate != null ? simstate.hashCode() : 0);
         result = 31 * result + (wxpasswd != null ? wxpasswd.hashCode() : 0);
         return result;
     }
@@ -272,6 +341,11 @@ public class DeviceInfo {
                 ", phonenumber='" + phonenumber + '\'' +
                 ", imsi='" + imsi + '\'' +
                 ", simserial='" + simserial + '\'' +
+                ", simoperator='" + simoperator + '\'' +
+                ", simoperatorname='" + simoperatorname + '\'' +
+                ", voicecapable=" + voicecapable +
+                ", phonetype=" + phonetype +
+                ", simstate=" + simstate +
                 ", wxpasswd='" + wxpasswd + '\'' +
                 '}';
     }
