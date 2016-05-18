@@ -1,1 +1,1 @@
-include ':robot', ':info', ':net', ':smsreceiver', ':common'
+include ':robot', ':info', ':net', ':smsreceiver', ':common', ':rebotiumcase', ':hook'

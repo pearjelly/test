@@ -191,6 +191,8 @@ public class WorkerService extends Service implements Runnable {
     private void loginUseAccount(Context context, DeviceInfo deviceInfo) {
         String mobile = deviceInfo.getPhonenumber();
         RobotContentResolver contentResolver = new RobotContentResolver(context);
+        int clearCount = contentResolver.clear();
+        Log.d(LOG_TAG, "clear deviceInfo content count:" + String.valueOf(clearCount));
         contentResolver.insertAccount(deviceInfo);
         Context infoContext = null;
         try {

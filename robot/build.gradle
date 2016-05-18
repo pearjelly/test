@@ -25,4 +25,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'cn.trinea.android.common:trinea-android-common:4.2.15'
     compile project(':net')
+    compile 'com.idescout.sql:sqlscout-server:1.0'
 }

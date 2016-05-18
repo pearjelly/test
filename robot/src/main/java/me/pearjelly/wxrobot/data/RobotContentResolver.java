@@ -32,6 +32,11 @@ public class RobotContentResolver {
         return contentResolver.insert(Uri.parse(ACCOUNTS_URI), values);
     }
 
+    public int clear() {
+        int count = contentResolver.delete(Uri.parse(ACCOUNTS_URI), null, null);
+        return count;
+    }
+
     public int updateAccount(int id, DeviceInfo deviceInfo) {
         ContentValues values = new ContentValues();
         String number = deviceInfo.getPhonenumber();
