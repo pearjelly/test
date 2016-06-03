@@ -1,9 +1,12 @@
 package me.pearjelly.common;
 
 import android.content.Context;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.File;
 
 /**
  * Created by hxb on 2016/5/8.
